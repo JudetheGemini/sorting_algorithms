@@ -1,85 +1,145 @@
-#include "sort.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include "sort.h"
 
 /**
- * merge_sort - A function that sorts an array using merge algorithm.
- * @array: The array to sort.
- * @size: The size of the array.
- * Return: Nothing.
+ * copy - copies data from one buffer to another
+ *
+ * @src: source buffer
+ * @dst: destination buffer
+ * @size: size of buffers
+ *
+ * Return: No Return
  */
-void merge_sort(int *array, size_t size)
+void copy(int *src, int *dst, int size)
 {
-	size_t i = 0;
-	int *base = NULL;
+	int i;
 
-	if (array == NULL || size < 2)
-		return;
-	base = malloc(sizeof(int) * size);
-	if (base == NULL)
-		return;
-	for (; i < size; i++)
-		base[i] = array[i];
-	merge_partition(0, size, array, base);
-	free(base);
+	for (i = 0; i < size; i++)
+		dst[i] = src[i];
 }
-
 /**
- * merge - A function that sorts the subarrays.
- * @lo: Lower index.
- * @mi: Middle index.
- * @hi: Higher index.
- * @dest: Destination for data.
- * @src: Input data.
- * Return: Nothing
+ * merge - merges two sets of data in ascending order
+ * but they must already be sorted before hand
+ * @array: first set of data
+ * @buff: second set of data
+ * @minL: lower range of first set of data
+ * @maxL: upper range of first set of data
+ * @minR: lower range of second set of data
+ * @maxR: upper range of second set of data
+ *
+ * Return: No Return
  */
-void merge(size_t lo, size_t mi, size_t hi, int *dest, int *src)
+void merge(int *array, int *buff, int minL, int maxL, int minR, int maxR)
 {
-	size_t i = 0, j = 0, k = 0;
+	int i = minL, j = minR, k = minL;
+
+	while (i <= maxL || j <= maxR)
+
+		if (i <= maxL && j <= maxR)
+			if (buff[i] <= buff[j])
+				array[k] = buff[i], k++, i++;
+			else
+				array[k] = buff[j], k++, j++;
+
+		else if (i > maxL && j <= maxR)
+			array[k] = buff[j], k++, j++;
+		else
+			array[k] = buff[i], k++, i++;
+}
+/**
+ * printcheck - prints an array in a given range
+ *
+ * @array: array of data to be print
+ * @r1: start of range
+ * @r2: end of range
+ *
+ * Return: No Return
+ */
+void printcheck(int *array, int r1, int r2)
+{
+	int i;
+
+	for (i = r1; i <= r2; i++)
+	{
+		if (i > r1)
+			printf(", ");
+		printf("%d", array[i]);
+	}
+	printf("\n");
+}
+/**
+ * split - recursive function to split data into merge tree
+ *
+ * @array: array of data to be split
+ * @buff: auxiliary array of data for merging
+ * @min: min range of data in array
+ * @max: max range of data in array
+ * @size: size of total data
+ *
+ * Return: No Return
+ */
+void split(int *array, int *buff, int min, int max, int size)
+{
+	int mid, tmax, minL, maxL, minR, maxR;
+
+	if ((max - min) <= 0)
+		return;
+
+	mid = (max + min + 1) / 2;
+	tmax = max;
+	max = mid - 1;
+
+	minL = min;
+	maxL = max;
+
+	split(array, buff, min, max, size);
+
+	min = mid;
+	max = tmax;
+
+	minR = min;
+	maxR = max;
+
+	split(array, buff, min, max, size);
 
 	printf("Merging...\n");
 	printf("[left]: ");
-	print_array(src + lo, mi - lo);
+
+	printcheck(array, minL, maxL);
+
 	printf("[right]: ");
-	print_array(src + mi, hi - mi);
-	i = lo;
-	j = mi;
-	k = lo;
-		for (; k < hi; k++)
-		{
-			if (i < mi && (j >= hi || src[i] <= src[j]))
-			{
-				dest[k] = src[i];
-				i++;
-			}
-			else
-			{
-				dest[k] = src[j];
-				j++;
-			}
-		}
+
+	printcheck(array, minR, maxR);
+	merge(array, buff, minL, maxL, minR, maxR);
+	copy(array, buff, size);
+
 	printf("[Done]: ");
-	print_array(dest + lo, hi - lo);
+	printcheck(array, minL, maxR);
 }
-
 /**
- * merge_partition - A funtion that splits the array recursively.
- * @lo: Lower index.
- * @hi: Higher index.
- * @array: The array to sort.
- * @base: The copy of the array.
- * Return: Nothing.
+ * merge_sort - sorts an array of integers in ascending order
+ * using the Merge sort algorithm
+ *
+ * @array: array of data to be sorted
+ * @size: size of data
+ *
+ * Return: No Return
  */
-void merge_partition(size_t lo, size_t hi, int *array, int *base)
+void merge_sort(int *array, size_t size)
 {
-	size_t mi = 0;
+	int *buff;
 
-	if (hi - lo < 2)
+	if (size < 2)
 		return;
-	mi = (lo + hi) / 2;
-	merge_partition(lo, mi, array, base);
-	merge_partition(mi, hi, array, base);
-	merge(lo, mi, hi, array, base);
-	for (mi = lo; mi < hi; mi++)
-		base[mi] = array[mi];
+
+	buff = malloc(sizeof(int) * size);
+	if (buff == NULL)
+		return;
+
+	copy(array, buff, size);
+
+	split(array, buff, 0, size - 1, size);
+
+	free(buff);
 }

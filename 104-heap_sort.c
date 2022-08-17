@@ -1,65 +1,74 @@
 #include "sort.h"
 
 /**
- * swap_root - A function that swap the root nodes.
- * @array: The heap to sort.
- * @root: The root of the heap.
- * @hi: The higher index.
- * @size: The size of the array.
+ * _swap - swaped 2 values.
+ * @array: the array for swap him values.
+ * @i: First index
+ * @j: Second index
+ * @r_size: The size constant for print
  * Return: Nothing
  */
-void swap_root(int *array, size_t root, size_t hi, size_t size)
+void _swap(int *array, int i, int j, const int r_size)
 {
-	size_t lo = 0, mi = 0, tmp = 0;
-	int aux = 0;
+	int tmp;
+	(void) r_size;
 
-	while ((lo = (2 * root + 1)) <= hi)
+	if (i != j)
 	{
-		tmp = root;
-		mi = lo + 1;
-		if (array[tmp] < array[lo])
-			tmp = lo;
-		if (mi <= hi && array[tmp] < array[mi])
-			tmp = mi;
-		if (tmp == root)
-			return;
-		aux = array[root];
-		array[root] = array[tmp];
-		array[tmp] = aux;
-		print_array(array, size);
-		root = tmp;
+		tmp = array[i];
+		array[i] = array[j];
+		array[j] = tmp;
+		print_array(array, (size_t)r_size);
 	}
 }
 
 /**
- * heap_sort - A function that sorts an array using heap algorithm.
- * @array: An array to sort.
- * @size: The size of the array.
+ * _largest - Find the largest number btween the layers
+ * @array: The array for sort
+ * @size: The menor element
+ * @i: The largest.
+ * @r_size: The size for print in swap
  * Return: Nothing.
+ */
+void _largest(int *array, size_t size, int i, const int r_size)
+{
+	int largest = i;
+	int lft = (2 * i) + 1;
+	int rgt = (2 * i) + 2;
+
+	if (lft < (int)size && array[lft] > array[largest])
+		largest = lft;
+
+	if (rgt < (int)size && array[rgt] > array[largest])
+		largest = rgt;
+
+	if (largest != i)
+	{
+		_swap(array, i, largest, r_size);
+		_largest(array, size, largest, r_size);
+	}
+}
+
+/**
+ * heap_sort - Call largest while exist layers
+ * @array: The array that generate the layers
+ * @size: Size of the array
+ * Return: Nothing
  */
 void heap_sort(int *array, size_t size)
 {
-	size_t hi = 0, gap = 0;
-	int tmp = 0;
+	const int r_size = (const int)size;
+	int i;
 
-		if (array == NULL || size < 2)
-			return;
+	if (size < 2 || !array)
+		return;
 
-		for (gap = (size - 2) / 2; 1; gap--)
-		{
-			swap_root(array, gap, size - 1, size);
-			if (gap == 0)
-				break;
-		}
+	for (i = size / 2 - 1; i >= 0; i--)
+		_largest(array, size, i, r_size);
 
-		hi = size - 1;
-		while (hi > 0)
+	for (i = size - 1; i >= 0; i--)
 	{
-		tmp = array[hi];
-		array[hi] = array[0];
-		array[0] = tmp;
-		print_array(array, size);
-		hi--;
-		swap_root(array, 0, hi, size);
+		_swap(array, 0, i, r_size);
+		_largest(array, i, 0, r_size);
 	}
 }

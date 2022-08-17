@@ -1,52 +1,86 @@
 #include "sort.h"
-#include <stdlib.h>
 #include <stdio.h>
-
 /**
-  * counting_sort - Afunction that sorts an array using counting algorithm.
-  * @array: The array to sort.
-  * @size: The length of the array.
-  * Return: Nothing.
-  */
+ * _bigest -  Give me the largest number in a array of integers
+ * @array: The Int array
+ * @size: Size of array
+ * Return: The largest number
+ */
+int _bigest(int *array, size_t size)
+{
+	size_t i;
+	int k = 0;
+
+	for (i = 0; i < size; i++)
+	{
+		if (k < array[i])
+			k = array[i];
+	}
+
+	return (k);
+}
+/**
+ * _memset -  Create a integer array and set each space in 0
+ * @size: Size of array
+ * Return: The integer array
+ */
+int *_memset(int size)
+{
+	int *ptr = NULL;
+	int i;
+
+	ptr = malloc((size) * sizeof(int));
+
+	for (i = 0; i < size; i++)
+		ptr[i] = 0;
+
+	return (ptr);
+}
+/**
+ * counting_sort - sort an array with the counting sort algorithm
+ * @array: The Int array
+ * @size: Size of array
+ * Return: The sorted list
+ */
 void counting_sort(int *array, size_t size)
 {
-	unsigned int i = 1;
-	int *counter = NULL, k = 0, j = 0;
+	size_t i, j;
+	int k = 0;
+	int *ptr = NULL, *sort_ar = NULL;
 
-	if (array == NULL || size < 2)
+	if (size < 2)
 		return;
-
-	k = array[0];
-	for (; i < size; i++)
-	{
-		if (array[i] > k)
-			k = array[i];
-	}
-
-	counter = malloc(sizeof(int) * (k + 1));
-	if (counter == NULL)
+	/*Know the largest number in the array*/
+	k = _bigest(array, size);
+	/*Make the help array*/
+	ptr = _memset(k + 1);
+	if (!ptr)
 		return;
+	/*Set the values for sorting*/
+	for (i = 0; i < size; i++)
+		for (j = 0; (int)j < k + 1; j++)
+			if ((int)j == array[i])
+				ptr[j] += 1;
+	/*Modificate the count in the array*/
+	for (i = 0; (int)i < k; i++)
+		ptr[i + 1] = ptr[i] + ptr[i + 1];
+	print_array(ptr, k + 1);
+	/*Create the sort array*/
+	sort_ar = malloc(size * sizeof(int));
+	if (!sort_ar)
+	{
+		free(ptr);
+		return;
+	}
 
-	for (j = 0; j <= k; j++)
-		counter[j] = 0;
-	for (i = 0; i < size; i++)
-		counter[array[i]] += 1;
-	for (j = 0; j < k; j++)
-	{
-		counter[j + 1] += counter[j];
-		printf("%d, ", counter[j]);
-	}
-	counter[j + 1] += counter[j];
-	printf("%d\n", counter[j + 1]);
 	for (i = 0; i < size; i++)
 	{
-		j = counter[array[i]] - 1;
-		if (array[i] != array[j])
-		{
-			k = array[i];
-			array[i] = array[j];
-			array[j] = k;
-		}
+		sort_ar[ptr[array[i]] - 1] = array[i];
+		ptr[array[i]] -= 1;
 	}
-	free(counter);
+	for (j = 0; j < size; j++)
+		array[j] = sort_ar[j];
+
+	free(sort_ar);
+	free(ptr);
 }
